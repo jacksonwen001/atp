@@ -1,0 +1,75 @@
+plugins {
+	id 'org.springframework.boot' version '2.6.4'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'com.chancetop'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+class JMeterRule implements ComponentMetadataRule {
+	void execute(ComponentMetadataContext context) {
+		context.details.allVariants {
+			withDependencies {
+				removeAll { it.group == "org.apache.jmeter" && it.name == "bom" }
+			}
+		}
+	}
+}
+
+dependencies {
+	ext {
+		set("JMeterVersion", "5.4.3")
+		set("hutoolVersion", "5.7.22")
+		set("xstreamVersion", "1.4.11.1")
+	}
+	implementation 'org.assertj:assertj-core:3.22.0'
+	implementation group: 'org.apache.jmeter', name: 'ApacheJMeter_core', version: "${JMeterVersion}"
+	implementation group: 'org.apache.jmeter', name: 'ApacheJMeter_java', version: "${JMeterVersion}"
+	implementation group: 'org.apache.jmeter', name: 'ApacheJMeter_functions', version: "${JMeterVersion}"
+	implementation group: 'org.apache.jmeter', name: 'ApacheJMeter_jdbc', version: "${JMeterVersion}"
+	implementation group: 'org.apache.jmeter', name: 'ApacheJMeter_components', version: "${JMeterVersion}"
+	implementation group: 'org.apache.jmeter', name: 'jorphan', version: "${JMeterVersion}"
+	implementation (group: 'org.apache.jmeter', name: 'ApacheJMeter_http', version: "${JMeterVersion}")
+	implementation group: 'cn.hutool', name: 'hutool-all', version: "${hutoolVersion}"
+	implementation group: 'com.thoughtworks.xstream', name: 'xstream', version: "${xstreamVersion}"
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'mysql:mysql-connector-java'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	configurations.all {
+		exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
+		exclude group: "xstream", module: 'com.thoughtworks.xstream'
+	}
+	components {
+		withModule("org.apache.jmeter:ApacheJMeter_core", JMeterRule)
+		withModule("org.apache.jmeter:ApacheJMeter_java", JMeterRule)
+		withModule("org.apache.jmeter:ApacheJMeter", JMeterRule)
+		withModule("org.apache.jmeter:jorphan", JMeterRule)
+		withModule("org.apache.jmeter:ApacheJMeter_http", JMeterRule)
+		withModule("org.apache.jmeter:ApacheJMeter_functions", JMeterRule)
+		withModule("org.apache.jmeter:ApacheJMeter_jdbc", JMeterRule)
+		withModule("org.apache.jmeter:ApacheJMeter_components", JMeterRule)
+
+
+
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
